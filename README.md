@@ -1,2 +1,2 @@
-# card
-Basic library of playing cards
+# Trump
+Basic Trump library
