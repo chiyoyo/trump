@@ -1,38 +1,35 @@
 <?php
 
-use Trump\Card;
+use Trump\Deck;
+use Trump\DeckOption;
 use Trump\Exception\InvalidCardPropertyException;
 use PHPUnit\Framework\TestCase;
 
-class CardTest extends TestCase
+class DeckTest extends TestCase
 {
     /**
      * @dataProvider initDataProvider
      */
-    public function testInit($summary, $suit, $number, $code)
+    public function testInit($summary, $options, $result)
     {
         $sm = explode(':', $summary, 2);
 
         if ($sm[0] === 'Exception') {
             $this->expectException(InvalidCardPropertyException::class);
         }
-        
-        $card = new Card($code);
+        $option = new DeckOption($options);
+        $deck = new Deck($option);
 
         if ($sm[0] === 'Success') {
-            $this->assertSame($suit, $card->getSuit());
-            $this->assertSame($number, $card->getNumber());
+            $this->assertSame($deck->remain(), $result);
         }
     }
 
     public static function initDataProvider()
     {
         $data = [
-            'Success: Spade 1'      => ['SPADES', 1, 'AS'],
-            'Success: Heart 13'     => ['HEARTS', 13, 'KH'],
-            'Success: Joker'        => ['JOKER', null, 'X1'],
-            'Success: Joker+number' => ['JOKER', null, 'X2'],
-            'Exception: no suit'    => ['', 0, 'exception'],
+            'Success: default' => [[], 52],
+            'Success: jokers' => [['jokers' => true], 54],
         ];
 
         return array_map(function ($key, $item) {

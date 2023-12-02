@@ -8,57 +8,105 @@ use Trump\Exception\InvalidCardPropertyException;
  */
 class Card extends GenericCard
 {
-    const SUIT_CLUB = 'club';
-    const SUIT_HEART = 'heart';
-    const SUIT_SPADE = 'spade';
-    const SUIT_DIAMOND = 'diamond';
-    const SUIT_JOKER = 'joker';
+    const SUIT_SPADE = 'SPADES';
+    const SUIT_DIAMOND = 'DIAMONDS';
+    const SUIT_CLUB = 'CLUBS';
+    const SUIT_HEART = 'HEARTS';
+    const SUIT_JOKER = 'JOKER';
 
-    const COLOR_RED = 'red';
-    const COLOR_BLACK = 'black';
+    const SUIT_SHORT_SPADE = 'S';
+    const SUIT_SHORT_DIAMOND = 'D';
+    const SUIT_SHORT_CLUB = 'C';
+    const SUIT_SHORT_HEART = 'H';
+    const SUIT_SHORT_JOKER = 'X';
 
-    protected $suits = [
-        self::SUIT_CLUB => [
-            'name'       => 'Club',
-            'short_name' => 'c',
-            'color'      => self::COLOR_BLACK,
+    const COLOR_RED = 'RED';
+    const COLOR_BLACK = 'BLACK';
+
+    // All card list
+    const CARDS = [
+        'AS', '2S', '3S', '4S', '5S', '6S', '7S', '8S', '9S', '0S', 'JS', 'QS', 'KS',
+        'AD', '2D', '3D', '4D', '5D', '6D', '7D', '8D', '9D', '0D', 'JD', 'QD', 'KD',
+        'AC', '2C', '3C', '4C', '5C', '6C', '7C', '8C', '9C', '0C', 'JC', 'QC', 'KC',
+        'AH', '2H', '3H', '4H', '5H', '6H', '7H', '8H', '9H', '0H', 'JH', 'QH', 'KH',
+    ];
+    const JOKERS = ['X1', 'X2'];
+    // SUITS = {'S': 'SPADES', 'D': 'DIAMONDS', 'H': 'HEARTS', 'C': 'CLUBS', '1': 'BLACK', '2': 'RED'}
+    const VALUES = [
+        'A' => 'ACE',
+        'J' => 'JACK',
+        'Q' => 'QUEEN',
+        'K' => 'KING',
+        '0' => '10',
+        'X' => 'JOKER',
+    ];
+    
+    const SUITS = [
+        self::SUIT_SHORT_CLUB => [
+            'name' => self::SUIT_CLUB,
+            'code'  => 'C',
+            'color' => self::COLOR_BLACK,
         ],
-        self::SUIT_SPADE => [
-            'name'       => 'Spade',
-            'short_name' => 's',
-            'color'      => self::COLOR_BLACK,
+        self::SUIT_SHORT_SPADE => [
+            'name' => self::SUIT_SPADE,
+            'code'  => 'S',
+            'color' => self::COLOR_BLACK,
         ],
-        self::SUIT_HEART => [
-            'name'       => 'Heart',
-            'short_name' => 'h',
-            'color'      => self::COLOR_RED,
+        self::SUIT_SHORT_HEART => [
+            'name' => self::SUIT_HEART,
+            'code'  => 'H',
+            'color' => self::COLOR_RED,
         ],
-        self::SUIT_DIAMOND => [
-            'name'       => 'Diamond',
-            'short_name' => 'd',
-            'color'      => self::COLOR_RED,
-        ],
-        self::SUIT_JOKER => [
-            'name'       => 'Joker',
-            'short_name' => 'j',
-            'color'      => null,
+        self::SUIT_SHORT_DIAMOND => [
+            'name' => self::SUIT_DIAMOND,
+            'code'  => 'D',
+            'color' => self::COLOR_RED,
         ],
     ];
 
-    //
-    protected $suit = '';
-    protected $number = null;
+    // Properties
+    protected $code = '';
+    protected $suit = [];
 
     /**
      * Initialize a card
      *
-     * @param string $suit
-     * @param int|null $number
+     * @param string $code
      */
-    public function __construct($suit, $number = null)
+    public function __construct($code)
     {
-        $this->setSuit($suit);
-        $this->setNumber($number);
+        $this->setCode($code);
+    }
+
+    public function setCode($code)
+    {
+        $code = strtoupper($code);
+        if (!in_array($code, self::CARDS) && !in_array($code, self::JOKERS)) {
+            throw new InvalidCardPropertyException('An invalid code was set for a card: ' . $code);
+        }
+        $this->code = $code;
+
+        if (in_array($code, self::CARDS)) {
+            $idx = array_search($code, self::CARDS);
+            $this->value = $idx % 13 + 1;
+            $this->suit = self::SUITS[$code[1]];
+        } elseif (in_array($code, self::JOKERS)) {
+            $this->suit = [
+                'name' => self::SUIT_JOKER,
+                'code'  => 'X',
+                'color' => null,
+            ];
+        }
+    }
+
+    /**
+     * Get the suit information of this card
+     *
+     * @return array
+     */
+    public function getSuitInfo(): array
+    {
+        return $this->suit;
     }
 
     /**
@@ -68,27 +116,17 @@ class Card extends GenericCard
      */
     public function getSuit(): string
     {
-        return $this->suits[$this->suit]['name'];
-    }
-
-    /**
-     * Get the short name of this card's suit
-     *
-     * @return string|null
-     */
-    public function getShortSuit(): string|null
-    {
-        return $this->suits[$this->suit]['short_name'];
+        return $this->suit['name'];
     }
 
     /**
      * Get the number of this card
      *
-     * @return integer
+     * @return integer|null
      */
-    public function getNumber(): int
+    public function getNumber(): int|null
     {
-        return $this->number;
+        return $this->value;
     }
 
     /**
@@ -98,7 +136,7 @@ class Card extends GenericCard
      */
     public function getColor(): string
     {
-        return $this->suits[$this->suit]['color'];
+        return $this->suit['color'];
     }
 
     /**
@@ -108,7 +146,7 @@ class Card extends GenericCard
      */
     public function getCode(): string
     {
-        return $this->getShortSuit() . ($this->isJoker() ? '' : dechex($this->getNumber()));
+        return $this->code;
     }
 
     /**
@@ -118,69 +156,6 @@ class Card extends GenericCard
      */
     public function isJoker(): bool
     {
-        return $this->suit === self::SUIT_JOKER;
-    }
-
-    /**
-     * Set the suit of this card
-     *
-     * @param string $suit
-     * @return void
-     */
-    public function setSuit($suit): void
-    {
-        if (! $this->isValidSuit($suit)) {
-            throw new InvalidCardPropertyException('An invalid suit was set for a card: ' . $suit);
-        }
-
-        $this->suit = $suit;
-    }
-
-    /**
-     * Set the number of this card
-     *
-     * @param int $number
-     * @return void
-     */
-    public function setNumber($number): void
-    {
-        if (! $this->isValidNumber($number)) {
-            throw new InvalidCardPropertyException('An invalid number was set for a card: ' . $number);
-        }
-
-        if (! $this->isJoker()) {
-            $this->number = $number;
-        }
-    }
-
-    /**
-     * Checks if the provided suit is valid
-     *
-     * @param string $suit
-     * @return boolean
-     */
-    protected function isValidSuit($suit): bool
-    {
-        if (is_null($suit)) {
-            return false;
-        }
-        return array_key_exists($suit, $this->suits);
-    }
-
-    /**
-     * Checks if the provided number is valid
-     *
-     * @param int $number
-     * @return boolean
-     */
-    protected function isValidNumber($number): bool
-    {
-        if ($this->isJoker()) {
-            return true;
-        }
-        if (is_null($number)) {
-            return false;
-        }
-        return $number >= 1 && $number <= 13;
+        return in_array($this->code, self::JOKERS);
     }
 }
