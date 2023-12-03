@@ -10,7 +10,7 @@ class DeckTest extends TestCase
     /**
      * @dataProvider initDataProvider
      */
-    public function testInit($summary, $options, $result)
+    public function testInit($summary, $options, $remain)
     {
         $sm = explode(':', $summary, 2);
 
@@ -21,7 +21,7 @@ class DeckTest extends TestCase
         $deck = new Deck($option);
 
         if ($sm[0] === 'Success') {
-            $this->assertSame($deck->remain(), $result);
+            $this->assertSame($deck->remain(), $remain);
         }
     }
 
