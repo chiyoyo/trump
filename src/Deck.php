@@ -5,35 +5,47 @@ use Trump\Exception\EndOfDeckException;
 
 class Deck
 {
-    protected $options = [
-        'joker' => 0,
-        'count' => 1,
-    ];
+    /** @var DeckOption オプション */
+    protected $option;
     /** @var array<Card> 残りカード */
     protected $cards = [];
     /** @var array<Card> 引いたカード */
     protected $pile = [];
 
+    /**
+     * Constructor
+     *
+     * @param DeckOption $option
+     */
     public function __construct(DeckOption $option)
     {
+        $this->option = $option;
         $this->cards = [];
-        for ($i = 0 ; $i < $option->getDeckCount() ; $i++) {
-            foreach (Card::CARDS as $code) {
+
+        // Add normal cards
+        foreach (Card::CARDS as $code) {
+            for ($i = 0 ; $i < $option->getDeckCount() ; $i++) {
                 $this->cards[] = new Card($code);
             }
-            if ($option->getJokers()) {
+        }
+
+        // Add jokers
+        if ($option->getJokers()) {
+            for ($i = 0 ; $i < $option->getDeckCount() ; $i++) {
                 foreach (Card::JOKERS as $code) {
                     $this->cards[] = new Card($code);
                 }
             }
         }
+
+        // Shuffle
         if ($option->getShuffled()) {
             $this->shuffle();
         }
     }
 
     /**
-     * Undocumented function
+     * Shuffle the remaining cards
      *
      * @return void
      */
@@ -43,7 +55,7 @@ class Deck
     }
 
     /**
-     * カードを取得する
+     * Get card
      *
      * @return Card
      */
@@ -58,7 +70,7 @@ class Deck
     }
 
     /**
-     * 残り枚数を取得
+     * Get number of card remaining
      *
      * @return integer
      */
